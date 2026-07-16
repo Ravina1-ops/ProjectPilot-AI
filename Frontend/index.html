@@ -52,12 +52,14 @@
             submitBtn.disabled = true;
             submitBtn.textContent = "Vectorizing Chunks...";
 
-            try {
-                const response = await fetch('/api/generate', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ project_idea: idea })
-                });
+           try {
+    // 1. URL ko Render ke live server se change kiya
+    // 2. prompt key ko backend se match kiya (agar backend 'prompt' expect karta hai)
+    const response = await fetch('https://projectpilot-ai.onrender.com/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: idea }) 
+    });
 
                 if (!response.body) {
                     outputScreen.textContent = "Error: No streaming pipeline established.";
