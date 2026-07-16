@@ -1,14 +1,11 @@
-import { GoogleGenAI } from "@google/genai";
+const https = require('https');
 
-export default async function handler(req, res) {
-  // CORS Headers allow karne ke liye
+export default function handler(req, res) {
+  // CORS Headers
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-  );
+  res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
@@ -22,22 +19,55 @@ export default async function handler(req, res) {
   const apiKey = process.env.GEMINI_API_KEY;
 
   if (!apiKey) {
-    return res.status(500).json({ error: 'API Key missing in Vercel settings' });
+    return res.status(500).json({ error: 'API Key is missing in Vercel settings' });
   }
 
-  try {
-    const ai = new GoogleGenAI({ apiKey: apiKey });
-    
-    // Normal single-shot generate content (bina complex stream chunking ke, taaki function timeout na ho)
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: `Generate a detailed engineering ML blueprint for: ${prompt}`,
+  // Gemini API request payload
+  const postData = JSON.stringify({
+    contents: [{
+      parts: [{
+        text: `Generate a detailed engineering ML blueprint for: ${prompt}`
+      }]
+    }]
+  });
+
+  const options = {
+    hostname: 'generativelanguage.googleapis.com',
+    port: 443,
+    path: `/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Content-Length': Buffer.byteLength(postData)
+    }
+  };
+
+  const apiRequest = https.request(options, (apiResponse) => {
+    let data = '';
+
+    apiResponse.on('data', (chunk) => {
+      data += chunk;
     });
 
-    return res.status(200).send(response.text);
+    apiResponse.on('end', () => {
+      try {
+        const parsedData = JSON.parse(data);
+        if (parsedData.candidates && parsedData.candidates[0].content.parts[0].text) {
+          const textResponse = parsedData.candidates[0].content.parts[0].text;
+          res.status(200).send(textResponse);
+        } else {
+          res.status(500).json({ error: 'Invalid response from Gemini API', details: parsedData });
+        }
+      } catch (e) {
+        res.status(500).json({ error: 'Failed to parse Gemini response', raw: data });
+      }
+    });
+  });
 
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: error.message });
-  }
+  apiRequest.on('error', (e) => {
+    res.status(500).json({ error: e.message });
+  });
+
+  apiRequest.write(postData);
+  apiRequest.end();
 }
