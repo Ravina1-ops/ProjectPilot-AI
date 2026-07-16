@@ -34,7 +34,8 @@ export default function handler(req, res) {
   const options = {
     hostname: 'generativelanguage.googleapis.com',
     port: 443,
-    path: `/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+    // CHANGED: We are now using 'v1' instead of 'v1beta' to make it fully compatible with gemini-1.5-flash
+    path: `/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
