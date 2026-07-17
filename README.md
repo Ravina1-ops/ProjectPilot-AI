@@ -45,6 +45,9 @@ The platform leverages a highly performant, decoupled microservices architecture
 1. Navigate to the backend directory:
    ```bash
    cd Backend
+2. Install the production dependencies
    pip install -r requirements.txt
+3. Set up your environment credentials inside a .env file:
    GEMINI_API_KEY=your_actual_api_key_here
+4. Fire up the local ASGI development server
    uvicorn main:app --reload
