@@ -4,7 +4,7 @@ ProjectPilot AI is an advanced, production-grade web application designed to hel
 
 ## 🔗 Live Deployments
 * **Frontend Application:** [https://project-pilot-fzxineg4u-ravina1versha2kritika3mansi4.vercel.app?_vercel_share=uBr7Vnry3QTt7FfzNW68dtug2PYANy3R] *(Hosted on Vercel)*
-* **Backend API Gateway:** `https://projectpilot-ai.onrender.com` *(Hosted on Render)*
+* **Backend API Gateway:** `https://projectpilot-ai.onrender.com/` *(Hosted on Render)*
 
 ---
 
